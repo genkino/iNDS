@@ -13,6 +13,7 @@
 
 // For easy timing functions... remove later
 #import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
 
 iNDSMicrophone *microphone;
 TPCircularBuffer *buf;
@@ -26,14 +27,36 @@ void Mic_DeInit(){
 }
 BOOL Mic_Init(){
     printf("Mic Init\n");
-    if (!microphone && [[AVAudioSession sharedInstance] respondsToSelector:@selector(requestRecordPermission)]) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            microphone = [[iNDSMicrophone alloc] init];
-            micEnabled = microphone.micEnabled;
-            buf = microphone.buffer;
-            [microphone start];
-        });
+    if (!microphone) {
+        bool isGranted = false;
+        switch ([[AVAudioSession sharedInstance] recordPermission]) {
+            case AVAudioSessionRecordPermissionGranted:
+                isGranted = true;
+                break;
+            case AVAudioSessionRecordPermissionDenied:
+                printf("Microphone AVAudioSessionRecordPermissionDenied\n");
+                break;
+            case AVAudioSessionRecordPermissionUndetermined:
+                printf("Microphone AVAudioSessionRecordPermissionUndetermined\n");
+                break;
+            default:
+                printf("Microphone unknown\n");
+                break;
+        }
+        
+        if (!isGranted) {
+            return false;
+        }
     }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        printf("Microphone enabled\n");
+        microphone = [[iNDSMicrophone alloc] init];
+        micEnabled = microphone.micEnabled;
+        buf = microphone.buffer;
+        [microphone start];
+    });
+    
     return true;
 }
 

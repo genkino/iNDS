@@ -249,5 +249,7 @@
 			</dict>
 		</dict>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+    <string>${PRODUCT_NAME} Microphone Usage</string>
 </dict>
 </plist>

@@ -17,6 +17,7 @@
 #import "WCEasySettingsViewController.h"
 #import "WCBuildStoreClient.h"
 #import "SharkfoodMuteSwitchDetector.h"
+#import <AVFoundation/AVFoundation.h>
 
 @interface iNDSROMTableViewController () {
     NSMutableArray * activeDownloads;
@@ -57,6 +58,7 @@
     [super viewWillAppear:animated];
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
     [self reloadGames:nil];
+    [self initMicrophone];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -69,7 +71,33 @@
                                                         }];
 }
 
-
+- (void)initMicrophone {
+    switch ([[AVAudioSession sharedInstance] recordPermission]) {
+        case AVAudioSessionRecordPermissionGranted:
+            printf("Microphone enabled\n");
+            break;
+        case AVAudioSessionRecordPermissionDenied:
+            printf("Microphone AVAudioSessionRecordPermissionDenied\n");
+            break;
+        case AVAudioSessionRecordPermissionUndetermined:
+            // This is the initial state before a user has made any choice
+            // You can use this spot to request permission here if you want
+            printf("Microphone AVAudioSessionRecordPermissionUndetermined\n");
+            [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
+                if (granted) {
+                    printf("Microphone enabled\n");
+                }
+                else {
+                    printf("Microphone disabled\n");
+                }
+            }];
+            break;
+        default:
+            printf("Microphone unknown\n");
+            break;
+    }
+}
+    
 - (IBAction)openSettings:(id)sender
 {
     WCEasySettingsViewController *settingsView = AppDelegate.sharedInstance.settingsViewController;
